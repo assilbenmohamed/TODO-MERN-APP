@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Récupération du code source...'
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Images') {
+            steps {
+                echo 'Construction des images Docker...'
+                sh 'docker compose build'
+            }
+        }
+
+        stage('Deploy with Docker Compose') {
+            steps {
+                echo 'Déploiement de l\'application...'
+                // Arrête les anciens conteneurs et relance avec les nouvelles images
+                sh 'docker compose down'
+                sh 'docker compose up -d'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Déploiement réussi ! L\'application tourne.'
+        }
+        failure {
+            echo '❌ Le pipeline a échoué. Vérifiez les logs.'
+        }
+    }
+}
